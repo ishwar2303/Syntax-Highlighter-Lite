@@ -139,8 +139,13 @@ class SyntaxHighlighter:
             color = m['color']
             value = m['value']
             label = m['label']
+            # Escape the plain text before the match
+            result += html.escape(text[start:matchStart], quote=False)
+
+            # Escape the matched value too
+            escaped_value = html.escape(value, quote=False)
             result += text[start:matchStart]
-            result += f'<span class="{label}" style="color: #{color};">{value}</span>'
+            result += f'<span class="{label}" style="color: #{color};">{escaped_value}</span>'
             start = matchEnd
         result += text[start:]
         return f'<pre style="background: black;"><code>{result}</code></pre>'
@@ -148,7 +153,6 @@ class SyntaxHighlighter:
 
     def highlight(self, text):
         text = text.strip()
-        text = self._escapeHTML(text)
         allMatches = self._findPositionOfAllPatterns(text)
         filtered = self._removeOverlaps(allMatches)
         return self._prepareHighlightedCode(text, filtered)
