@@ -146,20 +146,24 @@ export class SyntaxHighlighterService {
         let start = 0;
 
         for (const m of filtered) {
-            result += text.slice(start, m.start);
-            result += `<span class="${m.label}" style="color: #${m.color};">${m.value}</span>`;
+            // Escape normal text
+            result += this.escapeHTML(text.slice(start, m.start));
+
+            // Escape highlighted value too (important!)
+            const safeValue = this.escapeHTML(m.value);
+
+            result += `<span class="${m.label}" style="color: #${m.color};">${safeValue}</span>`;
             start = m.end;
         }
 
-        result += text.slice(start);
+        // Escape remaining text
+        result += this.escapeHTML(text.slice(start));
 
-        return `<pre style="background: black;"><code>${result}</code></pre>`;
+        return `<pre style="background: black; padding:25px;"><code>${result}</code></pre>`;
     }
 
     highlight(text: string, lang: string = 'python'): string {
         text = text.trim();
-        text = this.escapeHTML(text);
-
         const patterns = this.LANGUAGE_PATTERNS[lang];
         const allMatches = this.findPositionOfAllPatterns(text, patterns);
         const filtered = this.removeOverlaps(allMatches);
