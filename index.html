@@ -171,25 +171,30 @@ function prepareHighlightedCode(text, filtered) {
   let start = 0;
 
   for (const m of filtered) {
-    result += text.slice(start, m.start);
-    result += `<span class="${m.label}" style="color:#${m.color}">${m.value}</span>`;
+    // escape normal text
+    result += escapeHTML(text.slice(start, m.start));
+
+    // escape highlighted text too
+    const safeValue = escapeHTML(m.value);
+
+    result += `<span class="${m.label}" style="color:#${m.color}">${safeValue}</span>`;
     start = m.end;
   }
 
-  result += text.slice(start);
+  // escape remaining
+  result += escapeHTML(text.slice(start));
 
   return `<pre><code>${result}</code></pre>`;
 }
 
 function highlight() {
   const input = document.getElementById('codeInput').value.trim();
-  const escaped = escapeHTML(input);
 
   const patterns = LANGUAGE_PATTERNS.python;
-  const allMatches = findPositionOfAllPatterns(escaped, patterns);
+  const allMatches = findPositionOfAllPatterns(input, patterns);
   const filtered = removeOverlaps(allMatches);
 
-  const html = prepareHighlightedCode(escaped, filtered);
+  const html = prepareHighlightedCode(input, filtered);
   document.getElementById('output').innerHTML = html;
 }
 </script>
