@@ -1,203 +1,275 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8" />
-<title>Lightweight Python Syntax Highlighter</title>
+  <meta charset="UTF-8" />
+  <title>Lightweight Python Syntax Highlighter</title>
 
-<style>
-  body {
-    font-family: Consolas, monospace;
-    background: #1e1e1e;
-    color: white;
-    padding: 20px;
-  }
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
 
-  textarea {
-    width: 100%;
-    height: 90px; /* 3-4 lines */
-    font-family: Consolas, monospace;
-    font-size: 14px;
-    margin-bottom: 10px;
-    padding: 10px;
-  }
+    body {
+      font-family: Consolas, monospace;
+      background: #1e1e1e;
+      color: white;
+      padding: 20px;
+    }
 
-  button {
-    padding: 8px 16px;
-    font-size: 14px;
-    cursor: pointer;
-    margin-bottom: 15px;
-  }
+    .header {
+      margin-bottom: 10px;
+    }
 
-  pre {
-    background: black;
-    padding: 25px; /* Required */
-    overflow-x: auto;
-  }
-</style>
+    textarea {
+      width: 100%;
+      /* 3-4 lines */
+      font-family: Consolas, monospace;
+      font-size: 14px;
+      margin-bottom: 10px;
+      padding: 10px;
+      box-sizing: border-box;
+      height: 100%;
+      flex: 1;
+      padding: 20px;
+    }
+
+    button {
+      padding: 10px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+      background: Yellow;
+      color: black;
+      font-weight: bold;
+    }
+
+    pre {
+      background: black;
+      padding: 20px;
+      /* Required */
+      overflow-x: auto;
+    }
+
+    .flex-sb {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .highlighter {
+      display: flex;
+      box-sizing: border-box;
+    }
+
+    .highlighter>div {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      box-sizing: border-box;
+      min-height: 500px;
+    }
+
+    .highlighter>div:nth-child(1) {
+      margin-right: 10px;
+    }
+
+    @media print {
+
+      body * {
+        visibility: hidden;
+        /* Hide everything */
+      }
+
+      #printSection,
+      #printSection * {
+        visibility: visible;
+        /* Show only this div */
+      }
+
+      #printSection {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<h3>Developed by: <span style="color: yellow;">Ishwar Baisla</span></h3>
-<textarea id="codeInput" placeholder="Paste Python code here..."></textarea>
-<br />
-<button onclick="highlight()">Highlight</button>
+  <div class="flex-sb header">
+    <h3>Syntax Highlighter - Supported Languages: <span style="color: yellow;">Python</span></h3>
+    <button onclick="highlight()">Highlight</button>
+  </div>
+  <div class="highlighter">
+    <div>
+      <textarea id="codeInput" placeholder="Paste Python code here..."></textarea>
+    </div>
+    <div id="printSection"></div>
+  </div>
 
-<div id="output"></div>
 
-<script>
-const LANGUAGE_PATTERNS = {
-  python: {
 
-    multiline_string: {
-      pattern: /('{3}[\s\S]*?'{3}|"{3}[\s\S]*?"{3})/gm,
-      color: 'CE9178'
-    },
 
-    string: {
-      pattern: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/gm,
-      color: 'CE9178'
-    },
+  <script>
+    const LANGUAGE_PATTERNS = {
+      python: {
 
-    comment: {
-      pattern: /#.*$/gm,
-      color: '6A9955'
-    },
+        multiline_string: {
+          pattern: /('{3}[\s\S]*?'{3}|"{3}[\s\S]*?"{3})/gm,
+          color: 'CE9178'
+        },
 
-    decorator: {
-      pattern: /@\w+/gm,
-      color: 'C586C0'
-    },
+        string: {
+          pattern: /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')/gm,
+          color: 'CE9178'
+        },
 
-    function_call: {
-      pattern: /(?<!\w)([a-zA-Z_]\w*)\s*(?=\()/gm,
-      color: 'DCDCAA'
-    },
+        comment: {
+          pattern: /#.*$/gm,
+          color: '6A9955'
+        },
 
-    boolean: {
-      pattern: /\b(True|False)\b/gm,
-      color: 'D19A66'
-    },
+        decorator: {
+          pattern: /@\w+/gm,
+          color: 'C586C0'
+        },
 
-    keywords: {
-      pattern: /\b(None|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield|match|case)\b/gm,
-      color: '569CD6'
-    },
+        function_call: {
+          pattern: /(?<!\w)([a-zA-Z_]\w*)\s*(?=\()/gm,
+          color: 'DCDCAA'
+        },
 
-    builtins: {
-      pattern: /\b(abs|all|any|ascii|bin|bool|breakpoint|bytearray|bytes|callable|chr|classmethod|compile|complex|delattr|dict|dir|divmod|enumerate|eval|exec|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|isinstance|issubclass|iter|len|list|locals|map|max|memoryview|min|next|object|oct|open|ord|pow|print|property|range|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|vars|zip)\b/gm,
-      color: '4EC9B0'
-    },
+        boolean: {
+          pattern: /\b(True|False)\b/gm,
+          color: 'D19A66'
+        },
 
-    number: {
-      pattern: /\b(0b[01]+|0x[\da-fA-F]+|\d+\.\d+|\d+)\b/gm,
-      color: 'B5CEA8'
-    },
+        keywords: {
+          pattern: /\b(None|and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield|match|case)\b/gm,
+          color: '569CD6'
+        },
 
-    function_name: {
-      pattern: /(?<=\bdef\s)[a-zA-Z_]\w*/gm,
-      color: 'DCDCAA'
-    },
+        builtins: {
+          pattern: /\b(abs|all|any|ascii|bin|bool|breakpoint|bytearray|bytes|callable|chr|classmethod|compile|complex|delattr|dict|dir|divmod|enumerate|eval|exec|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|isinstance|issubclass|iter|len|list|locals|map|max|memoryview|min|next|object|oct|open|ord|pow|print|property|range|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|vars|zip)\b/gm,
+          color: '4EC9B0'
+        },
 
-    class_name: {
-      pattern: /(?<=\bclass\s)[a-zA-Z_]\w*/gm,
-      color: '4EC9B0'
-    },
+        number: {
+          pattern: /\b(0b[01]+|0x[\da-fA-F]+|\d+\.\d+|\d+)\b/gm,
+          color: 'B5CEA8'
+        },
 
-    operator: {
-      pattern: /(\+|\-|\*|\/|\/\/|%|\*\*|==|!=|<=|>=|=|<|>|\||&|\^|~|>>|<<)/gm,
-      color: 'D4D4D4'
-    },
+        function_name: {
+          pattern: /(?<=\bdef\s)[a-zA-Z_]\w*/gm,
+          color: 'DCDCAA'
+        },
 
-    punctuation: {
-      pattern: /[\(\)\[\]\{\}\:\,\.\;]/gm,
-      color: 'D4D4D4'
-    },
+        class_name: {
+          pattern: /(?<=\bclass\s)[a-zA-Z_]\w*/gm,
+          color: '4EC9B0'
+        },
 
-    identifier: {
-      pattern: /\b[a-zA-Z_]\w*\b/gm,
-      color: 'D4D4D4'
+        operator: {
+          pattern: /(\+|\-|\*|\/|\/\/|%|\*\*|==|!=|<=|>=|=|<|>|\||&|\^|~|>>|<<)/gm,
+          color: 'D4D4D4'
+        },
+
+        punctuation: {
+          pattern: /[\(\)\[\]\{\}\:\,\.\;]/gm,
+          color: 'D4D4D4'
+        },
+
+        identifier: {
+          pattern: /\b[a-zA-Z_]\w*\b/gm,
+          color: 'D4D4D4'
+        }
+      }
+    };
+
+    function escapeHTML(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
     }
-  }
-};
 
-function escapeHTML(text) {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
-}
+    function findPositionOfAllPatterns(text, patterns) {
+      const allMatches = [];
 
-function findPositionOfAllPatterns(text, patterns) {
-  const allMatches = [];
+      for (const label in patterns) {
+        const { pattern, color } = patterns[label];
+        let match;
+        while ((match = pattern.exec(text)) !== null) {
+          allMatches.push({
+            label,
+            start: match.index,
+            end: match.index + match[0].length,
+            value: match[0],
+            color
+          });
+        }
+      }
 
-  for (const label in patterns) {
-    const { pattern, color } = patterns[label];
-    let match;
-    while ((match = pattern.exec(text)) !== null) {
-      allMatches.push({
-        label,
-        start: match.index,
-        end: match.index + match[0].length,
-        value: match[0],
-        color
-      });
+      allMatches.sort((a, b) =>
+        a.start === b.start ? b.end - a.end : a.start - b.start
+      );
+
+      return allMatches;
     }
-  }
 
-  allMatches.sort((a, b) =>
-    a.start === b.start ? b.end - a.end : a.start - b.start
-  );
+    function removeOverlaps(allMatches) {
+      const filtered = [];
+      let processed = [-1, -1];
 
-  return allMatches;
-}
+      for (const match of allMatches) {
+        const { start, end } = match;
+        if (start >= processed[0] && start < processed[1]) {
+          continue;
+        }
+        processed = [start, end];
+        filtered.push(match);
+      }
 
-function removeOverlaps(allMatches) {
-  const filtered = [];
-  let processed = [-1, -1];
-
-  for (const match of allMatches) {
-    const { start, end } = match;
-    if (start >= processed[0] && start < processed[1]) {
-      continue;
+      return filtered;
     }
-    processed = [start, end];
-    filtered.push(match);
-  }
 
-  return filtered;
-}
+    function prepareHighlightedCode(text, filtered) {
+      let result = '';
+      let start = 0;
 
-function prepareHighlightedCode(text, filtered) {
-  let result = '';
-  let start = 0;
+      for (const m of filtered) {
+        // escape normal text
+        result += escapeHTML(text.slice(start, m.start));
 
-  for (const m of filtered) {
-    // escape normal text
-    result += escapeHTML(text.slice(start, m.start));
+        // escape highlighted text too
+        const safeValue = escapeHTML(m.value);
 
-    // escape highlighted text too
-    const safeValue = escapeHTML(m.value);
+        result += `<span class="${m.label}" style="color:#${m.color}">${safeValue}</span>`;
+        start = m.end;
+      }
 
-    result += `<span class="${m.label}" style="color:#${m.color}">${safeValue}</span>`;
-    start = m.end;
-  }
+      // escape remaining
+      result += escapeHTML(text.slice(start));
 
-  // escape remaining
-  result += escapeHTML(text.slice(start));
+      return `<pre><code>${result}</code></pre>`;
+    }
 
-  return `<pre><code>${result}</code></pre>`;
-}
+    function highlight() {
+      const input = document.getElementById('codeInput').value.trim();
 
-function highlight() {
-  const input = document.getElementById('codeInput').value.trim();
+      const patterns = LANGUAGE_PATTERNS.python;
+      const allMatches = findPositionOfAllPatterns(input, patterns);
+      const filtered = removeOverlaps(allMatches);
 
-  const patterns = LANGUAGE_PATTERNS.python;
-  const allMatches = findPositionOfAllPatterns(input, patterns);
-  const filtered = removeOverlaps(allMatches);
-
-  const html = prepareHighlightedCode(input, filtered);
-  document.getElementById('output').innerHTML = html;
-}
-</script>
+      const html = prepareHighlightedCode(input, filtered);
+      document.getElementById('printSection').innerHTML = html;
+    }
+  </script>
 
 </body>
+
 </html>
